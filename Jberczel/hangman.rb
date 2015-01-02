@@ -121,6 +121,8 @@ def save_game
   # name & location of file
   filename = 'games/saved.yaml'
   File.open(filename, 'w') do |file|
+    
+    # http://www.ruby-doc.org/core-2.0/Marshal.html#method-c-dump
     file.puts YAML.dump(self)
   end
 end
