@@ -18,6 +18,9 @@ class Hangman
 #   use value from above
     getWord(@value)
 
+#   to display answer for debugging reasons
+# puts @value
+
 #   call intro wh/ displays info to user
     intro
     playGame
@@ -33,10 +36,14 @@ class Hangman
 #   try to get a new value from the file
       @value = File.new(dictionary,'r').readlines[rand]
       File.open(dictionary,"r+") do |file|
+
+#   this works b/c each line has 1 word only
         #get length of dictionary dynamically
         word_count = file.readlines.size
         #generate a random number between 0 and word_count (to choose random word)    
         word=rand(word_count).ceil
+        
+         # rewind method call. This moves the file pointer back to the start of the file so we can read what have written:
         file.rewind
         file.readlines.each_with_index do |value, index|
           if index == word 
@@ -77,20 +84,34 @@ class Hangman
   end
 
   def playGame
+#   while still have turns left
     while @turns < 11
+      
+#   display turns instance variable
       puts "\n***** Number of turns remaining: #{11-@turns} *****"
       puts
+#   i guess it joins the dashes
       puts @dashes.join
 
       puts "Guess a letter!"
+      
+#   makes it lowercase for comparison
       guess = gets.downcase.chomp
+      
+#   make sure there was a response
       if guess == ''
         puts "Invalid guess. Guess again."
         playGame
+
+#   for the save commmand
       elsif guess == "save"
+#   call the method & exit
         save_game
         exit
       end
+#   use the guess as the parameter
+
+#   i think it makes sure the letter hasn't already been used
       checkGuessed(guess)
       checkWord(guess)
       if checkVictory
@@ -102,17 +123,25 @@ class Hangman
   end 
 
   def checkGuessed(letter)
+#   check the guessed array(?) & see if it includes the letter the user input
     if @guessed.include?(letter)
       puts "You've already guessed \"#{letter}\"! Guess again!"
       playGame
     else
+#   otherwise add it to the guessed array(?)
       @guessed << letter
     end
   end
 
   def checkWord(letter)
+
+#   i think it is checking the word & separating it into indices?
+#   check the char (current letter) with input?
     @value.split('').each_with_index do |char,index|
+      
+#       if the char is equal to the letter input
       if char == letter
+#   put the char in the place of the dash
         @dashes[index] = char
       end
     end
@@ -128,6 +157,7 @@ class Hangman
     end
   end
   def checkVictory
+#       if the joined dashes (remove spaces) matches the actual word
     if @dashes.join('').gsub(/\s+/,'').downcase.chomp == @value.downcase.chomp
       puts "You win! The word was #{@value}!"
       return true
@@ -141,6 +171,12 @@ class Hangman
     puts "Please name your game!"
     name=gets.chomp
     file=File.open('saves/saved_games.csv', 'ab')
+    
+#     looks like it writes the same thing as this method
+
+# #   initialize w/ these parameters
+  # def initialize(value=nil,turns=1,guessed=[],dashes=[])
+
     file.write("#{name},#{11-@turns},#{@guessed.join},#{@dashes.join.gsub(/\s+/,'')},#{@value}\n")
     file.close
   end
@@ -164,6 +200,7 @@ def start
 end
 
 def load_game
+#     check in the directory
     if !(File.exist?("saves/saved_games.csv"))
       puts "There are no saved games.\n Beginning a new game."
       Hangman.new()
@@ -171,11 +208,15 @@ def load_game
 
     puts "\nSaved Games:\n"
     saves=CSV.open 'saves/saved_games.csv'
+    
+         # i think this loads the info the file
     saves.each do |row|
       puts "Name: #{row[0]}, Turns left: #{row[1]}, Letters guessed: #{row[2]}, Current Game: #{row[3]}"
     end
     puts "\nPlease choose a game to continue"
     choice=gets.chomp
+    
+         # rewind method call. This moves the file pointer back to the start of the file so we can read what have written:
     saves.rewind
     saves.each do |row|
       if choice == row[0]
